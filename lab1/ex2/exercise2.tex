@@ -1,0 +1,79 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+\usepackage{geometry}
+\usepackage{pdfpages}
+\usepackage{pdfpages}
+\usepackage{listings}
+\usepackage{listingsutf8}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{placeins}
+\usepackage{pdflscape}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{colortbl}
+
+\geometry{
+a4paper,
+total={170mm,257mm},
+left=20mm,
+top=20mm
+}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\renewcommand\thesection{}
+\lstset{%
+literate=%
+ {ą}{{\k{a}}}1
+ {ę}{{\k{e}}}1
+ {Ą}{{\k{A}}}1
+ {Ę}{{\k{E}}}1
+ {ś}{{\'{s}}}1
+ {Ś}{{\'{S}}}1
+ {ź}{{\'{z}}}1
+ {Ź}{{\'{Z}}}1
+ {ń}{{\'{n}}}1
+ {Ń}{{\'{N}}}1
+ {ć}{{\'{c}}}1
+ {Ć}{{\'{C}}}1
+ {ó}{{\'{o}}}1
+ {Ó}{{\'{O}}}1
+ {ż}{{\.{z}}}1
+ {Ż}{{\.{Z}}}1
+ {ł}{{\l{}}}1
+ {Ł}{{\l{}}}1
+}
+
+\title{Teoria współbieżności\\ 
+Laboratorium I\\
+Zadanie 2}
+\author{Maciej Trątnowiecki}
+\date{AGH, Semestr Zimowy, 2020}
+
+\begin{document}
+    \maketitle
+    \section{Treść zadania}
+        W systemie dziala N wątkow, które dzielą obiekt licznika (początkowy stan licznika = 0). Każdy wątek wykonuje w pętli 5 razy inkrementację licznika. Zakładamy, że inkrementacja składa się z sekwencji trzech instrukcji: read, inc, write (odczyt z pamięci, zwiększenie o 1, zapis do pamięci). Wątki nie są synchronizowane.
+        \begin{itemize}
+            \item Jaka jest teoretycznie najmniejsza wartość licznika po zakończeniu działania wszystkich wątków i jaka kolejność instrukcji (przeplot) do niej prowadzi?
+            \item Analogiczne pytanie -- jaka jest maksymalna wartość licznika i odpowiedni przeplot instrukcji?
+        \end{itemize}
+        
+    \section{Rozwiązanie}
+        \textbf{Ograniczenie dolne}\\
+        Najmniejszą możliwą do uzyskania wartością licznika jest \textbf{5}.\\
+        Zauważmy, że pojedynczy wątek wykonuje operacje inkrementacji licznika w sposób sekwencyjny, tzn. pięciokrotnie powtarza kolejno operacje \textit{read}, \textit{inc}, \textit{write}. 
+        Oznacza to, że w obrębie pojedynczego wątka pięciokrotnie nastąpi powiększenie odczytanej wartości zmiennej o jeden. Ponieważ każdy z wątków jedynie podnosi stan licznika, niezależnie od kolejności wykonywania instrukcji i sposób rozdzielania czasu procesora program zakończy się z wartością licznika nie mniejszą niż 5 (ograniczenie dolne).\\
+        Dodatkowo, taki stan licznika jest osiągalny, np. gdy zmiana kontekstu następuje po wykonaniu pojedynczej operacji. To jest, N razy operacja read (zawsze odczytujemy tą sama wartość w każdym z wątków), potem N razy operacja inc (zawsze uzyskujemy tą sama wartość), a następnie N razy operacja write (znów zapisujemy tą samą wartość we wszystkich wątkach).\\
+        
+        \textbf{Ograniczenie górne}\\
+        Największą możliwą do uzyskania wartością licznika jest \textbf{5 * N}.\\
+        Zauważmy, że największą możliwą wartość uzyskamy wtedy, jeśli za każdym razem operacja read odczyta większą wartość niż poprzednio. W czasie wykonania programu operacja read wywoływana jest 5*N razy, jest to zatem ograniczenie górne (za każdym razem odczytać możemy wartość większą o 1, gdyż o tyle zwiększamy ją w naszym programie). Ponadto łatwo wykazać że jest osiągalna, jeżeli pojedyncza trójka operacji read-inc-write z danego wątku nie zostanie przerwana podczas wywołania. Taką sytuację uzyskujemy np. gdy wszystkie wątki wykonywane są jeden po drugim, lub gdy zmiana kontekstu następuje po zakończeniu przebiegu pętli. 
+
+\end{document}
+
