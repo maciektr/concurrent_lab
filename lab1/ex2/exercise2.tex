@@ -66,10 +66,10 @@ Zadanie 2}
         
     \section{Rozwiązanie}
         \textbf{Ograniczenie dolne}\\
-        Najmniejszą możliwą do uzyskania wartością licznika jest \textbf{5}.\\
-        Zauważmy, że pojedynczy wątek wykonuje operacje inkrementacji licznika w sposób sekwencyjny, tzn. pięciokrotnie powtarza kolejno operacje \textit{read}, \textit{inc}, \textit{write}. 
-        Oznacza to, że w obrębie pojedynczego wątka pięciokrotnie nastąpi powiększenie odczytanej wartości zmiennej o jeden. Ponieważ każdy z wątków jedynie podnosi stan licznika, niezależnie od kolejności wykonywania instrukcji i sposób rozdzielania czasu procesora program zakończy się z wartością licznika nie mniejszą niż 5 (ograniczenie dolne).\\
-        Dodatkowo, taki stan licznika jest osiągalny, np. gdy zmiana kontekstu następuje po wykonaniu pojedynczej operacji. To jest, N razy operacja read (zawsze odczytujemy tą sama wartość w każdym z wątków), potem N razy operacja inc (zawsze uzyskujemy tą sama wartość), a następnie N razy operacja write (znów zapisujemy tą samą wartość we wszystkich wątkach).\\
+        Najmniejszą możliwą do uzyskania wartością licznika jest \textbf{2}.\\
+        Ponieważ każdy z wątków jedynie zwiększa wartość licznika, nie może ona nigdy spaść poniżej stanu początkowego wynoszącego zero. Jednakże, wartość zero licznika nie jest osiągalna po wykonaniu wszystkich wątków, ponieważ choć jeden cykl read-inc-write musi być wykonany, a wartość odczytana nie wyniesie mniej niż zero. Łatwo wykazać, że wartość jeden również nie jest osiągalna, gdyż o końcowej wartości licznika decyduje wartość odczytana w operacji read której wynik zostanie zapisany jako ostatni. Nie może ona wynosić zero, gdyż wcześniej musiał nastąpić choć jeden zapis.\\
+        Wykazać możemy, że wartość dwa licznika jest osiągalna, stanowi zatem wartość minimalną. Przykładowy przeplot instrukcji prowadzący do takiego stanu licznika może mieć postać w której jeden z wątków odczytuje wartość licznika (zero), następnie drugi wątek wykonuje wszystkie inkrementacje licznika za wyjątkiem ostatniej. Kolejno, pozostałe wątki mogą wykonać wszystkie operacje dla nich przewidziane. Następnie, pierwszy z wątków zapisuje odczytany wcześniej stan licznika powiększony o jeden (tzn. jeden). Teraz drugi z wątków przeprowadza odczyt (odczytując jeden). Wstrzymuje jednak zapis powiększonej wartości, aż pierwszy z wątków nie skończy wykonania. Po ostatnim zapisie na pierwszym (i wszystkich pozostałych) wątku, wątek drugi zapisuje zapamiętaną wartość powiększoną o jeden - tzn. dwa. \\
+        Warto zaznaczyć, że taka wartość jest nieosiągalna dla zdegenerowanego przypadku, gdy w systemie wykonywany jest wyłącznie jeden wątek - wtedy wartość minimalna to 1. 
         
         \textbf{Ograniczenie górne}\\
         Największą możliwą do uzyskania wartością licznika jest \textbf{5 * N}.\\
@@ -77,3 +77,6 @@ Zadanie 2}
 
 \end{document}
 
+        % Zauważmy, że pojedynczy wątek wykonuje operacje inkrementacji licznika w sposób sekwencyjny, tzn. pięciokrotnie powtarza kolejno operacje \textit{read}, \textit{inc}, \textit{write}. 
+        % Oznacza to, że w obrębie pojedynczego wątka pięciokrotnie nastąpi powiększenie odczytanej wartości zmiennej o jeden. Ponieważ każdy z wątków jedynie podnosi stan licznika, niezależnie od kolejności wykonywania instrukcji i sposób rozdzielania czasu procesora program zakończy się z wartością licznika nie mniejszą niż 5 (ograniczenie dolne).\\
+        % Dodatkowo, taki stan licznika jest osiągalny, np. gdy zmiana kontekstu następuje po wykonaniu pojedynczej operacji. To jest, N razy operacja read (zawsze odczytujemy tą sama wartość w każdym z wątków), potem N razy operacja inc (zawsze uzyskujemy tą sama wartość), a następnie N razy operacja write (znów zapisujemy tą samą wartość we wszystkich wątkach).\\
