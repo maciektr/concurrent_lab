@@ -1,4 +1,4 @@
-package com.company;
+package main.agh.lab1;
 
 public class ExampleThread extends Thread{
     private Counter counter;

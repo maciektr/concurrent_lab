@@ -1,4 +1,4 @@
-package agh.cs.lab;
+package main.agh.lab2;
 
 
 public class Main {
