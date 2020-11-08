@@ -1,8 +1,6 @@
 package main.agh.lab4;
 
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -11,12 +9,14 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Main {
     private static final int wait = 10;
 
-    private static void spawn_threads(ExecutorService executor, Buffer buffer, int n, boolean uniform){
+    private static void spawn_threads(ArrayList<Thread> executor, Buffer buffer, int n, boolean uniform){
         Random seedrand = new Random();
         while(n-- > 0){
-            executor.submit(new Thread(new Producer(buffer, new RandomGenerator(seedrand.nextInt(), buffer.size, uniform))));
-            executor.submit(new Thread(new Consumer(buffer, new RandomGenerator(seedrand.nextInt(), buffer.size, uniform), false)));
+            executor.add(new Thread(new Producer(buffer, new RandomGenerator(seedrand.nextInt(), buffer.size, uniform))));
+            executor.add(new Thread(new Consumer(buffer, new RandomGenerator(seedrand.nextInt(), buffer.size, uniform), false)));
         }
+        for(Thread t : executor)
+            t.start();
     }
 
     private static void print_csv_header(){
@@ -36,11 +36,12 @@ public class Main {
         AccessLogger putLogger = new AccessLogger();
         AccessLogger takeLogger = new AccessLogger();
         Buffer buffer = new Buffer(buffer_size, putLogger, takeLogger, fair);
-        ExecutorService executor = Executors.newFixedThreadPool(2*prod_cons_count);
+        ArrayList<Thread> executor = new ArrayList<>();
 
         spawn_threads(executor, buffer, prod_cons_count, uniform);
         Thread.sleep(1000 * wait);
-        executor.shutdownNow();
+        for(Thread t : executor)
+            t.interrupt();
         Thread.sleep(100);
 
         print_log(putLogger.get_log(), "prod", buffer_size, prod_cons_count, fair, uniform);
@@ -49,6 +50,8 @@ public class Main {
 
     public static void main(String []args) throws InterruptedException {
         OptionsParser options = new OptionsParser(args);
+        if(options.buffer_size < 0)
+            options = new OptionsParser(100, 10000, true, true);
         if(options.print_header)
             print_csv_header();
         test(options.buffer_size, options.prod_cons_count, options.fair, options.uniform);
@@ -114,8 +117,6 @@ class Consumer extends Entity{
             } catch (InterruptedException e) {
                 return;
             }
-            if(res == null)
-                continue;
             if(print)
                 for(Object s : res)
                     System.out.println(s);
@@ -126,10 +127,10 @@ class Consumer extends Entity{
 
 class Buffer {
     final Lock lock = new ReentrantLock();
-    final Lock prodLock = new ReentrantLock(true);
-    final Lock consLock = new ReentrantLock(true);
-    final Condition notFull  = lock.newCondition();
-    final Condition notEmpty = lock.newCondition();
+    final Condition firstPut = lock.newCondition();
+    final Condition firstTake = lock.newCondition();
+    final Condition allPut = lock.newCondition();
+    final Condition allTake = lock.newCondition();
 
     Object[] items;
     int putptr, takeptr, count;
@@ -156,18 +157,23 @@ class Buffer {
     }
 
     public void put(List<Object> input) throws InterruptedException {
-        if(fair)
-            prodLock.lock();
         lock.lock();
         try {
+            if(fair && ((ReentrantLock)lock).hasWaiters(firstTake))
+                allPut.await();
             while (count + input.size() > items.length)
-                notFull.await();
+                if (fair)
+                    firstPut.await();
+                else
+                    allPut.await();
             this.__put_all(input);
             putLogger.log(input.size());
-            notEmpty.signalAll();
+            if(fair) {
+                allPut.signal();
+                firstTake.signal();
+            } else
+                allTake.signalAll();
         } finally {
-            if(fair)
-                prodLock.unlock();
             lock.unlock();
         }
     }
@@ -182,18 +188,23 @@ class Buffer {
 
     public void take(int n, List<Object> res) throws InterruptedException {
         res.clear();
-        if(fair)
-            consLock.lock();
         lock.lock();
         try {
+            if(fair && ((ReentrantLock)lock).hasWaiters(firstTake))
+                allTake.await();
             while (count - n < 0)
-                notEmpty.await();
+                if(fair)
+                    firstTake.await();
+                else
+                    allTake.await();
             __take_all(n, res);
             takeLogger.log(n);
-            notFull.signalAll();
+            if(fair) {
+                firstPut.signal();
+                allTake.signal();
+            } else
+                allPut.signal();
         } finally {
-            if(fair)
-                consLock.unlock();
             lock.unlock();
         }
     }
@@ -277,6 +288,22 @@ class OptionsParser{
         fair = f;
         uniform = u;
         print_header = ph;
+    }
+
+    public OptionsParser(int prod_cons_count, int buffer_size, boolean fair, boolean uniform, boolean print_header){
+        this.prod_cons_count = prod_cons_count;
+        this.buffer_size = buffer_size;
+        this.fair = fair;
+        this.uniform = uniform;
+        this.print_header = print_header;
+    }
+
+    public OptionsParser(int prod_cons_count, int buffer_size, boolean fair, boolean uniform){
+        this.prod_cons_count = prod_cons_count;
+        this.buffer_size = buffer_size;
+        this.fair = fair;
+        this.uniform = uniform;
+        this.print_header = false;
     }
 
     private boolean parseBoolean(String x){
