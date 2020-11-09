@@ -6,23 +6,23 @@ public class OptionsParser{
     final int imageWidth;
     final int imageHeight;
     final int sectionCount;
+    final int maxIterations;
+    final double zoom;
+    final int paddingLeft;
+    final int paddingTop;
 
     final String title;
 
     public OptionsParser(){
-        threadsCount = 4;
-        imageWidth = 800;
-        imageHeight = 600;
+        threadsCount = 8;
+        imageWidth = 850;
+        imageHeight = 800;
         title = "Mandelbrot Set";
         sectionCount = threadsCount * 10;
-    }
-
-    public OptionsParser(int threadsCount, int imageWidth, int imageHeight, int sectionCount){
-        this.threadsCount = threadsCount;
-        this.imageWidth = imageWidth;
-        this.imageHeight = imageHeight;
-        title = "Mandelbrot Set";
-        this.sectionCount = sectionCount;
+        maxIterations = 600;
+        paddingLeft = 570;
+        paddingTop = 420;
+        zoom = 280;
     }
 
     public OptionsParser(String []args){
