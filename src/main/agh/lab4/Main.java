@@ -136,6 +136,7 @@ class Buffer {
     int putptr, takeptr, count;
     public final int size;
     private final boolean fair;
+    private boolean firstTakeWaiting=false, firstPutWaiting=false;
 
     private final AccessLogger putLogger;
     private final AccessLogger takeLogger;
@@ -159,18 +160,22 @@ class Buffer {
     public void put(List<Object> input) throws InterruptedException {
         lock.lock();
         try {
-            if(fair && ((ReentrantLock)lock).hasWaiters(firstTake))
+            if(fair && firstPutWaiting) {
                 allPut.await();
+            }
+
             while (count + input.size() > items.length)
-                if (fair)
+                if (fair) {
+                    firstPutWaiting = true;
                     firstPut.await();
-                else
+                    firstPutWaiting = false;
+                }else
                     allPut.await();
             this.__put_all(input);
             putLogger.log(input.size());
             if(fair) {
-                allPut.signal();
                 firstTake.signal();
+                allPut.signal();
             } else
                 allTake.signalAll();
         } finally {
@@ -190,12 +195,14 @@ class Buffer {
         res.clear();
         lock.lock();
         try {
-            if(fair && ((ReentrantLock)lock).hasWaiters(firstTake))
+            if(fair && firstTakeWaiting)
                 allTake.await();
             while (count - n < 0)
-                if(fair)
+                if(fair) {
+                    firstTakeWaiting = true;
                     firstTake.await();
-                else
+                    firstTakeWaiting = false;
+                }else
                     allTake.await();
             __take_all(n, res);
             takeLogger.log(n);
@@ -262,7 +269,7 @@ class OptionsParser{
 
     public OptionsParser(String []args){
         int pcc = -1, bs = -1;
-        boolean f = false, u=false, ph=false;
+        boolean f = true, u=false, ph=false;
         for(int i = 0; i<args.length-1; i+=2){
             String arg = args[i + 1];
             switch (args[i]) {
