@@ -40,10 +40,11 @@ public class Main {
 
         spawn_threads(executor, buffer, prod_cons_count, uniform);
         Thread.sleep(1000 * wait);
-        for(Thread t : executor)
+        for(Thread t : executor) {
             t.interrupt();
+            t.stop();
+        }
         Thread.sleep(100);
-
         print_log(putLogger.get_log(), "prod", buffer_size, prod_cons_count, fair, uniform);
         print_log(takeLogger.get_log(), "cons", buffer_size, prod_cons_count, fair, uniform);
     }
@@ -83,15 +84,10 @@ class Producer extends Entity{
 
     @Override
     public void run() {
-        ArrayList<Object> product = new ArrayList<>();
         while(true){
-            product.clear();
             int p = this.portion();
-            for(int i = 0; i<p; i++){
-                product.add("Box["+p+"]{"+(c++)+"}");
-            }
             try {
-                super.buffer.put(product);
+                super.buffer.put("Box["+p+"]{"+(c++)+"}", p);
             } catch (InterruptedException e) {
                 return;
             }
@@ -126,7 +122,7 @@ class Consumer extends Entity{
 
 
 class Buffer {
-    final Lock lock = new ReentrantLock();
+    final ReentrantLock lock = new ReentrantLock();
     final Condition firstPut = lock.newCondition();
     final Condition firstTake = lock.newCondition();
     final Condition allPut = lock.newCondition();
@@ -149,37 +145,37 @@ class Buffer {
         this.fair = fair;
     }
 
-    private void __put_all(List<Object> input){
-        for(Object obj : input) {
-            items[putptr++] = obj;
+    private void __put_all(Object template, int count){
+        while(count-- > 0) {
+            items[putptr++] = template;
             putptr %= items.length;
-            ++count;
         }
     }
 
-    public void put(List<Object> input) throws InterruptedException {
+    public void put(Object input, int inputCount) throws InterruptedException {
         lock.lock();
         try {
             if(fair && firstPutWaiting) {
                 allPut.await();
             }
 
-            while (count + input.size() > items.length)
+            while (count + inputCount > items.length)
                 if (fair) {
                     firstPutWaiting = true;
                     firstPut.await();
                     firstPutWaiting = false;
                 }else
                     allPut.await();
-            this.__put_all(input);
-            putLogger.log(input.size());
+            this.__put_all(input, inputCount);
+            putLogger.log(inputCount);
             if(fair) {
                 firstTake.signal();
                 allPut.signal();
             } else
                 allTake.signalAll();
         } finally {
-            lock.unlock();
+            if(lock.isHeldByCurrentThread())
+                lock.unlock();
         }
     }
 
@@ -192,8 +188,8 @@ class Buffer {
     }
 
     public void take(int n, List<Object> res) throws InterruptedException {
-        res.clear();
         lock.lock();
+        res.clear();
         try {
             if(fair && firstTakeWaiting)
                 allTake.await();
@@ -212,7 +208,8 @@ class Buffer {
             } else
                 allPut.signal();
         } finally {
-            lock.unlock();
+            if(lock.isHeldByCurrentThread())
+                lock.unlock();
         }
     }
 }
@@ -222,7 +219,7 @@ class AccessLogger{
     private final HashMap<Integer, Integer> accessLog = new HashMap<>();
 
     public HashMap<Integer, Integer> get_log(){
-        return new HashMap<>(accessLog);
+        return accessLog;
     }
 
     public void log(int x){
