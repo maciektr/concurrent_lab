@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+\usepackage{geometry}
+\usepackage{pdfpages}
+\usepackage{pdfpages}
+\usepackage{listings}
+\usepackage{listingsutf8}
+\usepackage{multirow}
+\usepackage{siunitx}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{placeins}
+\usepackage{pdflscape}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{colortbl}
+
+\geometry{
+a4paper,
+total={170mm,257mm},
+left=20mm,
+top=20mm
+}
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\renewcommand\thesection{}
+\lstset{%
+literate=%
+ {ą}{{\k{a}}}1
+ {ę}{{\k{e}}}1
+ {Ą}{{\k{A}}}1
+ {Ę}{{\k{E}}}1
+ {ś}{{\'{s}}}1
+ {Ś}{{\'{S}}}1
+ {ź}{{\'{z}}}1
+ {Ź}{{\'{Z}}}1
+ {ń}{{\'{n}}}1
+ {Ń}{{\'{N}}}1
+ {ć}{{\'{c}}}1
+ {Ć}{{\'{C}}}1
+ {ó}{{\'{o}}}1
+ {Ó}{{\'{O}}}1
+ {ż}{{\.{z}}}1
+ {Ż}{{\.{Z}}}1
+ {ł}{{\l{}}}1
+ {Ł}{{\l{}}}1
+}
+
+\title{Teoria współbieżności\\ 
+Laboratorium V}
+\author{Maciej Trątnowiecki}
+\date{AGH, Semestr Zimowy, 2020}
+
+\begin{document}
+    \maketitle
+    \section{Implementacja}
+        Implementacja rozwiązania zakłada podział zadania generowania zbioru Mandelbrota na prostokątne fragmenty o szerokości pełnego obrazu i równej wysokości. Ilość fragmentów definiowana jest przez zmienną sectionCount, na jej podstawie dobierana jest wysokość każdego fragmentu. Program mierzy czas generacji obrazu w milisekundach.\\ 
+        Program nie implementuje synchronizacji funkcji setRGB, jako że nie jest to potrzebne.
+        
+    \section{Pomiary czasu wykonania programu}
+        Program przetestowano dla poniższej konfiguracji generatora.
+        \begin{itemize}
+            \item Szerokość obrazu: 850
+            \item Wysokość obrazu: 800
+            \item Liczba iteracji: 1000
+            \item Przybliżenie: 300
+        \end{itemize}
+        Dla takich ustawień średni czas generacji na pojedynczym wątku mojego procesora wynosi 790 milisekund.\\
+        Mój procesor wyposażony jest w 4 rdzenie i 8 wątków. \\
+        Poniżej zamieszczam wyniki pomiarów. 
+        
+        \begin{center}
+            \begin{table}[ht]
+                \centering
+                \begin{tabular}{|c|c|c|}
+                    \hline
+                    Liczba wątków w egzekutorze  & Liczba podproblemów & Średni czas wykonania (milisekundy) \\
+                    \specialrule{1pt}{1pt}{1pt}
+                    1 & 1 & 790 \\
+                    \hline
+                    4 & 4 & 450 \\
+                    \hline
+                    8  & 4 & 450 \\
+                    \hline 
+                    8 & 8 & 360 \\
+                    \hline
+                    8 & 16 & 240\\
+                    \hline
+                    8 & 80 & 210\\
+                    \hline
+                    8 & 800 & 220\\
+                    \hline 
+                    16 & 16 & 240\\
+                    \hline
+                    16 & 32 & 220\\
+                    \hline
+                    16 & 160 & 210\\
+                    \hline
+                    \end{tabular}
+                \caption{Pomiar czasów wykonania}
+                \label{tab:my_label}
+            \end{table}
+        \end{center}\\
+        Na podstawie przeprowadzonych pomiarów stwierdzam że optymalne wyniki otrzymałem dla liczbie wątków egzekutora równej ilości wątków procesora, oraz liczby podproblemów równej jej dziesięciokrotności.  
+\end{document}
