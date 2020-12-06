@@ -80,10 +80,11 @@ Laboratorium VI}
         Sieć nie jest ograniczona, ponieważ w stanie S4 ilość znaczników nie jest ograniczona.
         \begin{figure}[h!]
             \centering
-            \includegraphics[width=14cm]{lab6/n1_3.png}
+            \includegraphics[width=7cm]{lab6/n1_3.png}
             \caption{Graf osiągalności sieci z zadania pierwszego, znaczniki stanu czwartego}
         \end{figure}\\
 
+    \newpage
     \section{Zadanie 2}
         Przeprowadziłem symulację problemu producenta-konsumenta z ograniczonym buforem (sieć przykładowa programu).
         \begin{figure}[h!]
@@ -95,10 +96,59 @@ Laboratorium VI}
         \begin{figure}[h!]
             \centering
             \includegraphics[width=10cm]{lab6/n2_1.png}
-            \caption{Projekt sieci z zadania pierwszego}
+            \caption{Analiza niezmienników sieci z zadania drugiego}
+        \end{figure}\\
+        O rozmiarze bufora mówi nam ostatnie równanie, tj. $M(P6) + M(P7) = 3$, ma on zatem rozmiar trzech elementów.
+        Sieć jest zachowawcza, ponieważ liczba znaczników w każdym znakowaniu osiągalnym ze znakowania początkowego jest taka sama.
+
+    \newpage
+    \section{Zadanie 3}
+        W symulatorze przygotowałem sieć reprezentującą problem producenta-konsumenta z nieograniczonym buforem według poniższego projektu.
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=10cm]{lab6/n3.png}
+            \caption{Projekt sieci z zadania trzeciego}
+        \end{figure}\\
+        \FloatBarrier
+        Przeprowadziłem analizę niezmienników. 
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=10cm]{lab6/n3_1.png}
+            \caption{Analiza niezmienników sieci z zadania trzeciego}
+        \end{figure}\\
+        \FloatBarrier
+        Sieć cechuje brak pełnego pokrycia miejsc. 
+    
+    \newpage
+    \section{Zadanie 4}
+        W symulatorze przygotowałem sieć ze wzajemnym wykluczaniem dwóch procesów na wspólnym zasobie według poniższego projektu.
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=10cm]{lab6/n4.png}
+            \caption{Projekt sieci z zadania czwartego}
+        \end{figure}\\
+        \FloatBarrier
+        Przeprowadziłem analizę niezmienników. 
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=10cm]{lab6/n4_1.png}
+            \caption{Analiza niezmienników sieci z zadania czwartego}
         \end{figure}\\
 
-        
+    \newpage
+    \section{Zadanie 5}
+        W symulatorze przygotowałem sieć z zakleszczeniem według poniższego projektu.
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=10cm]{lab6/n5.png}
+            \caption{Projekt sieci z zadania piątego}
+        \end{figure}\\
+        Wygenerowałem graf osiągalności. 
+        \begin{figure}[h!]
+            \centering
+            \includegraphics[width=10cm]{lab6/n5_1.png}
+            \caption{Analiza niezmienników sieci z zadania piątego}
+        \end{figure}\\
 
         
 \end{document}
