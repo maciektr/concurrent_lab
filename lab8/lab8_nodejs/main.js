@@ -116,11 +116,13 @@ Philosopher.prototype.startAsym = function(count) {
         if (step >= count)
             return;
 
+        if(id % 2 != 0){
+            var tmp = f1;
+            f1 = f2;
+            f2 = tmp;
+        }
         var leftFork = forks[f1];
         var rightFork = forks[f2];
-        if(this.id % 2 === 0)
-            rightFork = [leftFork, leftFork = rightFork][0];
-
 
         await think();
         await leftFork.acquire(() => {printWrapper('Acquire left fork')});
@@ -254,7 +256,7 @@ Philosopher.prototype.startBothForks = function(count) {
     task(0);
 };
 
-function main(){
+function main(version){
     const versionRunner = Object.freeze({
         'asym': 'startAsym',
         'naive': 'startNaive',
@@ -272,8 +274,6 @@ function main(){
         philosophers[i][versionRunner[version]](count);
     };
 
-    const version = 'asym';
-
     console.log(`Version: ${version}`);
 
     var N = 5;
@@ -289,4 +289,4 @@ function main(){
         run(philosophers, version, 10);
 }
 
-main();
+main('asym');
