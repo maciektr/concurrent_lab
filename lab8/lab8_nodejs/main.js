@@ -262,16 +262,17 @@ function main(){
         'both_forks': 'startBothForks',
     });
 
+    var conductor = new Conductor();
+
     const run = (philosophers, version, count) => {
         if(version === 'conductor'){
-            var conductor = new Conductor();
             philosophers[i][versionRunner['conductor']](count, conductor);
             return;
         }
         philosophers[i][versionRunner[version]](count);
     };
 
-    const version = 'conductor';
+    const version = 'asym';
 
     console.log(`Version: ${version}`);
 
