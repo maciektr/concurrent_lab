@@ -266,7 +266,9 @@ Philosopher.prototype.startBothForks = async function(count) {
     ended++;
 };
 
-const nPhilosophers = 5;
+const nPhilosophers = 10,
+    count = 10,
+    version = 'both_forks';
 
 function main(version){
     const versionRunner = Object.freeze({
@@ -297,7 +299,7 @@ function main(version){
 
     var promises = []
     for (var i = 0; i < nPhilosophers; i++)
-        promises.push(run(philosophers, version, 10));
+        promises.push(run(philosophers, version, count));
 
     Promise.all(promises).then(() => {
         if(ended = nPhilosophers)
@@ -305,4 +307,4 @@ function main(version){
     });
 }
 
-main('conductor');
+main(version);

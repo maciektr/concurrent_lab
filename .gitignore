@@ -3,7 +3,10 @@ lab6/PIPE-gui-5.0.2.jar
 lab6/PIPEv4.3.0
 lab6/*.pdf
 lab7/ex2/test_folder
+lab8/*.pdf
+
 ignore/
+
 # Created by https://www.toptal.com/developers/gitignore/api/latex,vscode,intellij+all,java,code-java,python,jupyternotebooks,visualstudiocode,tex,c++,cmake
 # Edit at https://www.toptal.com/developers/gitignore?templates=latex,vscode,intellij+all,java,code-java,python,jupyternotebooks,visualstudiocode,tex,c++,cmake
 

@@ -3,8 +3,8 @@ package main.agh.starve;
 import java.util.*;
 
 public class Main {
-    private static final int wait = 10;
-    private static final int nThreads = 10;
+    private static final int wait = 5000;
+    private static final int nThreads = 100;
 
     private static void spawn_threads(ArrayList<Thread> executor, Dinner dinner){
         for(int n = 0; n < nThreads; n++)
@@ -28,7 +28,7 @@ public class Main {
         ArrayList<Thread> executor = new ArrayList<>();
         Dinner dinner = new Dinner(nThreads, executor);
         spawn_threads(executor, dinner);
-        Thread.sleep(5000);
+        Thread.sleep(wait);
         kill_threads(executor);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println(dinner.getAverageWait());
