@@ -30,11 +30,13 @@ public class Philosopher implements Runnable{
     public void run() {
         while (true) {
             think();
+            long startTime = System.nanoTime();
             try {
                 dinner.put(id);
             } catch (InterruptedException e) {
                 interrupted = true;
             }
+            dinner.addToWait(System.nanoTime() - startTime);
             eat();
             dinner.take(id);
             if (interrupted)

@@ -24,10 +24,15 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         ArrayList<Thread> executor = new ArrayList<>();
         Dinner dinner = new Dinner(nThreads, executor);
         spawn_threads(executor, dinner);
-//        kill_threads(executor);
+        Thread.sleep(5000);
+        kill_threads(executor);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println(dinner.getAverageWait());
+        }));
+
     }
 }

@@ -13,8 +13,9 @@
 //    implementacji zmierz średni czas oczekiwania każdego filozofa na dostęp
 //    do widelców. Wyniki przedstaw na wykresach.
 
-const async = require("async");
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+var waitTimeSum = 0;
+var ended = 0;
 
 var Fork = function() {
     this.state = 0;
@@ -91,15 +92,15 @@ Philosopher.prototype.startNaive = function(count) {
     task(0);
 }
 
-Philosopher.prototype.startAsym = function(count) {
+Philosopher.prototype.startAsym = async function(count) {
     // zaimplementuj rozwiązanie asymetryczne
     // każdy filozof powinien 'count' razy wykonywać cykl
     // podnoszenia widelców -- jedzenia -- zwalniania widelców
 
     const forks = this.forks,
+        id = this.id,
         f1 = this.f1,
-        f2 = this.f2,
-        id = this.id;
+        f2 = this.f2;
 
     const printWrapper = function(text){
         console.log(`Philosopher (${id}): ${text}.`);
@@ -116,26 +117,29 @@ Philosopher.prototype.startAsym = function(count) {
         if (step >= count)
             return;
 
-        if(id % 2 != 0){
-            var tmp = f1;
-            f1 = f2;
-            f2 = tmp;
-        }
         var leftFork = forks[f1];
         var rightFork = forks[f2];
 
         await think();
-        await leftFork.acquire(() => {printWrapper('Acquire left fork')});
-        await rightFork.acquire(() => {printWrapper('Acquire right fork')});
+        var start = process.hrtime();
+        if(id % 2 != 0){
+            await leftFork.acquire(() => {printWrapper('Acquire left fork')});
+            await rightFork.acquire(() => {printWrapper('Acquire right fork')});
+        }else{
+            await rightFork.acquire(() => {printWrapper('Acquire right fork')});
+            await leftFork.acquire(() => {printWrapper('Acquire left fork')});
+        }
+        waitTimeSum+=process.hrtime(start)[1];
 
         await eat();
         await leftFork.release(() => {printWrapper('Release left fork')});
         await rightFork.release(() => {printWrapper('Release right fork')});
 
-        task(step + 1);
+        await task(step + 1);
     }
 
-    task(0);
+    await task(0);
+    ended++;
 }
 
 var Conductor = function(){
@@ -158,7 +162,7 @@ Conductor.prototype.release = function(){
     this.state = 0;
 }
 
-Philosopher.prototype.startConductor = function(count, conductor) {
+Philosopher.prototype.startConductor = async function(count, conductor) {
     // zaimplementuj rozwiązanie z kelnerem
     // każdy filozof powinien 'count' razy wykonywać cykl
     // podnoszenia widelców -- jedzenia -- zwalniania widelców
@@ -189,8 +193,10 @@ Philosopher.prototype.startConductor = function(count, conductor) {
         var rightFork = forks[f2];
 
         await think();
+        var start = process.hrtime();
         await leftFork.acquire(() => {printWrapper('Acquire left fork')});
         await rightFork.acquire(() => {printWrapper('Acquire right fork')});
+        waitTimeSum+=process.hrtime(start)[1];
 
         await eat();
         await leftFork.release(() => {printWrapper('Release left fork')});
@@ -198,10 +204,11 @@ Philosopher.prototype.startConductor = function(count, conductor) {
 
         await conductor.release();
 
-        task(step + 1);
+        await task(step + 1);
     }
 
-    task(0);
+    await task(0);
+    ended++;
 }
 
 // TODO: wersja z jednoczesnym podnoszeniem widelców
@@ -220,7 +227,7 @@ var acquireBothForks = async function(left, right, callback){
     callback();
 };
 
-Philosopher.prototype.startBothForks = function(count) {
+Philosopher.prototype.startBothForks = async function(count) {
     var forks = this.forks,
         f1 = this.f1,
         f2 = this.f2,
@@ -244,17 +251,22 @@ Philosopher.prototype.startBothForks = function(count) {
         var rightFork = forks[f2];
 
         await think();
+        var start = process.hrtime();
         await acquireBothForks(leftFork, rightFork, () => {printWrapper('Acquire both forks')});
+        waitTimeSum+=process.hrtime(start)[1];
 
         await eat();
         await leftFork.release(() => {printWrapper('Release left fork')});
         await rightFork.release(() => {printWrapper('Release right fork')});
 
-        task(step + 1);
+        await task(step + 1);
     }
 
-    task(0);
+    await task(0);
+    ended++;
 };
+
+const nPhilosophers = 5;
 
 function main(version){
     const versionRunner = Object.freeze({
@@ -266,27 +278,31 @@ function main(version){
 
     var conductor = new Conductor();
 
-    const run = (philosophers, version, count) => {
+    const run = async (philosophers, version, count) => {
         if(version === 'conductor'){
-            philosophers[i][versionRunner['conductor']](count, conductor);
-            return;
+            return philosophers[i][versionRunner['conductor']](count, conductor);
         }
-        philosophers[i][versionRunner[version]](count);
+        return philosophers[i][versionRunner[version]](count);
     };
 
     console.log(`Version: ${version}`);
 
-    var N = 5;
     var forks = [];
     var philosophers = []
-    for (var i = 0; i < N; i++)
+    for (var i = 0; i < nPhilosophers; i++)
         forks.push(new Fork());
 
-    for (var i = 0; i < N; i++)
+    for (var i = 0; i < nPhilosophers; i++)
         philosophers.push(new Philosopher(i, forks));
 
-    for (var i = 0; i < N; i++)
-        run(philosophers, version, 10);
+    var promises = []
+    for (var i = 0; i < nPhilosophers; i++)
+        promises.push(run(philosophers, version, 10));
+
+    Promise.all(promises).then(() => {
+        if(ended = nPhilosophers)
+        console.log(`${waitTimeSum / nPhilosophers / 1000000}`);
+    });
 }
 
-main('asym');
+main('conductor');

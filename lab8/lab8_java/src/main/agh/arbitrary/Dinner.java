@@ -8,6 +8,7 @@ public class Dinner {
     private final int nPhilosophers;
     Semaphore arbiter;
     private final ArrayList<Semaphore> forks;
+    private long waitTime;
 
     public Dinner(int nPhilosophers, ArrayList<Thread> philosophers){
         this.nPhilosophers = nPhilosophers;
@@ -27,5 +28,13 @@ public class Dinner {
         arbiter.acquire();
         forks.get(id).acquire();
         forks.get((id + 1) % nPhilosophers).acquire();
+    }
+
+    public synchronized void addToWait(long wait){
+        this.waitTime += wait;
+    }
+
+    public synchronized long getAverageWait(){
+        return this.waitTime / this.nPhilosophers / 1000000;
     }
 }

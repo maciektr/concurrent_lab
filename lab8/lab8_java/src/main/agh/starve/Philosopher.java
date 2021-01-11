@@ -30,7 +30,9 @@ public class Philosopher implements Runnable{
     public void run() {
         while (true) {
             think();
+            long startTime = System.nanoTime();
             dinner.put(id);
+            dinner.addToWait(System.nanoTime() - startTime);
             eat();
 //            Main.accesses.set(philosopherIndex, Main.accesses.get(philosopherIndex) + 1);
             dinner.take(id);
