@@ -49,7 +49,7 @@ class DependencyGraph(nx.DiGraph):
         return nx.get_node_attributes(self, 'char')[node]
 
     def plot(self):
-        pos = nx.spring_layout(self)
+        pos = nx.planar_layout(self)
         nc = ['c' for _ in range(self.number_of_nodes())]
         plt.figure("Dependency Graph", figsize=(10, 10))
         nx.draw_networkx_nodes(self, pos, node_color=nc, cmap=plt.get_cmap('jet'), node_size=900)

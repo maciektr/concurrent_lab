@@ -87,7 +87,7 @@ class Solver:
                 break
             result.append(block)
 
-        return result
+        return ''.join(result)
 
     @property
     def dependency_graph(self):
@@ -96,4 +96,4 @@ class Solver:
         return self.__dgraph
 
     def get_foata_from_graph(self):
-        return self.dependency_graph.get_foata()
+        return ''.join(self.dependency_graph.get_foata())
