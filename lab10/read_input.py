@@ -55,7 +55,7 @@ class Problem:
 
 def read_input(vocal=True):
     res = Problem()
-    res.read()
+    res.read(vocal=vocal)
     return res
 
 

@@ -1,81 +1,92 @@
 from read_input import Problem
+from dgraph import DependencyGraph
 
 
 class Solver:
     def __init__(self, problem: Problem):
         self.problem = problem
+        self.__dependency_relation = None
 
-def get_dependency_relation(problem: Problem):
-    dependency = {}
-    for a in problem.alphabet:
-        for b in problem.alphabet:
-            if (a not in problem.relation) \
-                or (b not in problem.relation[a]):
-                if a not in dependency:
-                    dependency[a] = set([b])
-                else:
-                    dependency[a].add(b)
-    return dependency
+    @property
+    def dependency_relation(self):
+        if self.__dependency_relation:
+            return self.__dependency_relation
 
-def get_trace(problem: Problem, word=None, traces=None):
-    # print(word, traces, problem, sep='\n')
-    if not word:
-        word = problem.word
-    if not traces:
-        traces = set([word])
-    traces.add(word)
-    i = 0
-    while i < len(word) - 1:
-        char = word[i]
-        changed = word[:i] + word[i+1] + word[i] + word[i+2:]
-        if char in problem.relation \
-            and word[i+1] in problem.relation[char] \
-            and changed not in traces:
-            traces |= get_trace(problem, changed, traces)
+        dependency = {}
+        for a in self.problem.alphabet:
+            for b in self.problem.alphabet:
+                if (a not in self.problem.relation) \
+                    or (b not in self.problem.relation[a]):
+                    if a not in dependency:
+                        dependency[a] = set([b])
+                    else:
+                        dependency[a].add(b)
+
+        self.__dependency_relation = dependency
+        return dependency
+
+    def get_trace(self, word=None, traces=None):
+        # print(word, traces, problem, sep='\n')
+        if not word:
+            word = self.problem.word
+        if not traces:
+            traces = set([word])
+        traces.add(word)
+        i = 0
+        while i < len(word) - 1:
+            char = word[i]
+            changed = word[:i] + word[i+1] + word[i] + word[i+2:]
+            if char in self.problem.relation \
+                and word[i+1] in self.problem.relation[char] \
+                and changed not in traces:
+                traces |= self.get_trace(word=changed, traces=traces)
+                i+=1
             i+=1
-        i+=1
-    return traces
+        return traces
 
-def get_floata(problem: Problem):
-    result = []
-    dependency = get_dependency_relation(problem)
+    def get_floata(self):
+        result = []
+        dependency = self.dependency_relation
 
-    stacks = {char: [] for char in problem.alphabet}
-    for i in range(len(problem.word)-1, -1, -1):
-        char = problem.word[i]
-        stacks[char].append(char)
-        for char2 in problem.alphabet:
-            if char != char2 \
-                and (char not in problem.relation
-                    or char2 not in problem.relation[char]
-                ):
-                stacks[char2].append('#')
+        stacks = {char: [] for char in self.problem.alphabet}
+        for i in range(len(self.problem.word)-1, -1, -1):
+            char = self.problem.word[i]
+            stacks[char].append(char)
+            for char2 in self.problem.alphabet:
+                if char != char2 \
+                    and (char not in self.problem.relation
+                        or char2 not in self.problem.relation[char]
+                    ):
+                    stacks[char2].append('#')
 
-    while True:
-        block = '('
-        not_empty_stack = False
-        popped_markers = {char: 0 for char in problem.alphabet}
+        while True:
+            block = '('
+            not_empty_stack = False
+            popped_markers = {char: 0 for char in self.problem.alphabet}
 
-        for key in stacks.keys():
-            if len(stacks[key]) == 0:
-                continue
-            not_empty_stack = True
+            for key in stacks.keys():
+                if len(stacks[key]) == 0:
+                    continue
+                not_empty_stack = True
 
-            if stacks[key][-1] == '#' or popped_markers[key] != 0:
-                continue
+                if stacks[key][-1] == '#' or popped_markers[key] != 0:
+                    continue
 
-            popped = stacks[key].pop()
-            block+=popped
-            for char in dependency[popped]:
-                if char != popped \
-                    and len(stacks[char]) != 0:
-                    stacks[char].pop()
-                    popped_markers[char]+=1
+                popped = stacks[key].pop()
+                block+=popped
+                for char in dependency[popped]:
+                    if char != popped \
+                        and len(stacks[char]) != 0:
+                        stacks[char].pop()
+                        popped_markers[char]+=1
 
-        block+=')'
-        if not not_empty_stack:
-            break
-        result.append(block)
+            block+=')'
+            if not not_empty_stack:
+                break
+            result.append(block)
 
-    return result
+        return result
 
+    def get_dependency_graph(self):
+        dgraph = DependencyGraph(self.problem, self.dependency_relation)
+        return dgraph

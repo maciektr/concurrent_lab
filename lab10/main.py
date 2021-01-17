@@ -1,19 +1,21 @@
 from read_input import read_input
 
-from solve import get_dependency_relation, get_trace, get_floata
+from solve import Solver
 from dgraph import DependencyGraph
 
 def main():
     problem = read_input(vocal=False)
-    print(problem)
-    # dep = get_dependency_relation(problem)
+    # print(problem)
+    solver = Solver(problem)
+
+    # dep = solver.dependency_relation
     # print(dep)
-    # traces = get_trace(problem)
+    # traces = solver.get_trace()
     # print(traces)
-    # floata = get_floata(problem)
+    # floata = solver.get_floata()
     # print(floata)
-    depGraph = DependencyGraph(problem)
-    depGraph.plot()
+
+    solver.get_dependency_graph().plot()
 
 
 if __name__ == '__main__':
